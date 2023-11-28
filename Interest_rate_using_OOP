@@ -1,0 +1,287 @@
+#include <iostream>
+using namespace std;
+
+class BankAccount // Bank Account Class
+{
+protected:
+    string accountNumber; // Holder info
+    string holderName;
+    double balance;
+
+public:
+    // Constructor
+    BankAccount()
+    {
+        accountNumber = " ";
+        holderName = " ";
+        balance = 0.0; 
+    }
+    BankAccount(string holderName = "N/A", string accountNumber ="N/A", double balance = 0.0)
+    {
+        this->holderName = holderName;
+        this->accountNumber = accountNumber;
+        this->balance = balance;
+    }
+
+    virtual void depositMoney(int amount) = 0;
+    virtual void withdrawMoney(int amount) = 0;
+    virtual void monthlyStatement() = 0;
+};
+
+class CheckingAccount : public BankAccount // Checking Account class inherit BankAccount publically
+{
+public:
+    CheckingAccount():BankAccount("N/A","N/A",0.0)
+    {}
+    CheckingAccount(string name, string number ,double balance):BankAccount(name, number,balance)
+    {}
+    virtual void checkWritten(int) = 0;
+};
+
+class ServiceChargeChecking : public CheckingAccount
+{
+protected:
+    const int checksLimit = 3;
+    int totalChecks;
+
+public:
+    // Constructor
+    ServiceChargeChecking(string holderName,string accountNumber, double balance)
+        : CheckingAccount(holderName,accountNumber,balance)
+    {
+        totalChecks = 0;
+    }
+
+    // Methods
+    void checkWritten(int checkAmount) // If user pay check to withdraw the money
+    {
+        if (totalChecks < checksLimit) // Maximum limit of check is 3
+        {
+
+            if (balance > 0 && balance > checkAmount)
+            {
+                balance = balance - checkAmount;
+                totalChecks++;
+            }
+            else
+            {
+                cout << "Exceed Checks Limit" << endl;
+            }
+        }
+    }
+    void depositMoney(int amount) // Deposit Override Function
+    {
+        balance += amount;
+    }
+    void withdrawMoney(int amount) // Withdraw Override Function
+    {
+        if (balance > 0 && balance > amount)
+        {
+            balance = balance - amount;
+        }
+        else
+        {
+            cout << "Insufficient Funds" << endl;
+        }
+    }
+    void monthlyStatement()
+    {
+        cout << "-------MONTHLY STATEMENT-------" << endl;
+        cout << "Account Holder Name :" << holderName << endl;
+        cout << "Account Number :" << accountNumber << endl;
+        cout << "Balance :" << balance << endl;
+        cout << "Monthly Checks Limit :" << checksLimit << endl;
+    }
+};
+class NoServiceCharge : public CheckingAccount // NoServiceCharge Class
+{
+    protected:
+        double interestRate;
+        double minimumBalance;
+        const int checksLimit = 3;
+        int totalChecks;
+
+    public:
+        NoServiceCharge(string holderName = "N/A", string accountNumber = "N/A", double balance = 0.0)
+            : CheckingAccount(holderName, accountNumber, balance)
+        {
+            this->interestRate = 1.5;
+            // minimum balance must be 1000 not zero that already in the account when a user create
+            this->minimumBalance = 1000.00;
+            this->balance = minimumBalance;
+            totalChecks = 0; // When a new user create account checklimit again zero
+        }
+
+        // Methods
+        void checkWritten(int checkAmount) // If user pay check to withdraw the money
+        {
+            if (totalChecks < checksLimit) // Maximum limit of check is 3
+            {
+
+                if (balance > 0 && balance > checkAmount)
+                {
+
+                    balance = balance - checkAmount;
+                    totalChecks++;
+                }
+                else
+                {
+                    cout << "Exceed Checks Limit" << endl;
+                }
+            }
+        }
+        void depositMoney(int amount) // Deposit Override Function
+        {
+            balance += amount;
+        }
+
+        void withdrawMoney(int amount) // Withdraw Override Function
+        {
+            if (balance > 0 && balance > amount)
+            {
+                balance = balance - amount;
+            }
+            else
+            {
+                cout << "Insufficient Funds" << endl;
+            }
+        }
+
+        void monthlyStatement()
+        {
+            cout << "-------MONTHLY STATEMENT-------" << endl;
+            cout << "Account Holder Name :" << holderName << endl;
+            cout << "Account Number :" << accountNumber << endl;
+            cout << "Balance :" << balance << endl;
+            cout << "Monthly Checks Limit :" << checksLimit << endl;
+            cout << "Interest Rate Amount :" << balance * interestRate << endl; // Calculating rate of interest
+        }
+};
+
+class HighInterestChecking : public NoServiceCharge // HighInterest Class
+{
+
+public:
+    HighInterestChecking(string holderName, string accountNumber, double balance)
+        : NoServiceCharge(holderName, accountNumber, balance)
+    {
+        this->interestRate = 2.5; // High interest rate
+        this->minimumBalance = 2000.00;
+    }
+
+     void depositMoney(int amount) // Deposit Override Function
+    {
+        balance += amount;
+    }
+
+    void withdrawMoney(int amount) // Withdraw Override Function
+    {
+        if (balance > 0 && balance > amount)
+        {
+            balance = balance - amount;
+        }
+        else
+        {
+            cout << "Insufficient Funds" << endl;
+        }
+    }   
+
+    void monthlyStatement()
+    {
+        NoServiceCharge ::monthlyStatement();
+    }
+};
+
+class SavingAccount : public BankAccount // Saving Account Class
+{
+protected:
+    double interestRate;
+
+public:
+    SavingAccount(string holderName = "N/A", string accountNumber = "N/A", double balance = 0.0)
+        : BankAccount(holderName, accountNumber, balance)
+    {
+        this->interestRate = 1.5;
+    }
+
+    void monthlyStatement()
+    {
+        cout << "-------MONTHLY STATEMENT-------" << endl;
+        cout << "Account Holder Name :" << holderName << endl;
+        cout << "Account Number :" << accountNumber << endl;
+        cout << "Balance :" << balance << endl;
+
+    }
+};
+
+class HighInterestRate : public SavingAccount
+{
+protected:
+    double minimumBalance;
+
+public:
+    HighInterestRate(string holderName = "N/A", string accountNumber = "N/A", double balance = 0.0)
+        : SavingAccount(holderName, accountNumber, balance)
+    {
+        this->interestRate = 2.;
+        this->minimumBalance = 1500;
+        this->balance=minimumBalance;
+    }
+
+    void monthlyStatement()
+    {
+        SavingAccount :: monthlyStatement();
+        cout << "Interest Rate Amount :" << balance * interestRate << endl; // Calculating rate of interest
+    }
+    
+};
+
+class CertificateOfDeposit : public BankAccount
+{
+private:
+    int noCdmonth;
+    double interestRate;
+    int currentCdmonth;
+public:
+    CertificateOfDeposit(string holderName = "N/A", string accountNumber = "N/A", double balance = 0.0,  int noCdmonth=0 , int currentCdmonth=0)
+        : BankAccount(holderName, accountNumber, balance)
+        {
+            this->noCdmonth=noCdmonth;
+            this->interestRate=3.00;
+            this->currentCdmonth=currentCdmonth;
+        }
+
+        void monthlyStatement()
+    {
+        cout << "-------MONTHLY STATEMENT-------" << endl;
+        cout << "Account Holder Name :" << holderName << endl;
+        cout << "Account Number :" << accountNumber << endl;
+        cout << "Balance :" << balance << endl;
+        cout << "Interest Rate Amount :" << balance * interestRate << endl; // Calculating rate of interest
+    }
+
+};
+
+int main()
+{
+    // BankAccount *bank;
+    // ServiceChargeChecking service("Ali","4564646",4464.66);
+
+    // bank = &service;
+    // bank->depositMoney(1000);
+    // bank->withdrawMoney(500);
+    // bank->monthlyStatement();
+
+    CheckingAccount* ptr,*ptr2;
+    ServiceChargeChecking service("Ali","4564646",4464.66);
+    NoServiceCharge s1("Ali", "4564646", 4464.66);
+    ptr = &s1;
+    ptr2 = &service;
+    ptr->depositMoney(500);
+    ptr->withdrawMoney(200);
+    ptr->monthlyStatement();
+    ptr2->depositMoney(1500);
+    ptr2->withdrawMoney(1200);
+    ptr2->monthlyStatement();
+    return 0;
+}
